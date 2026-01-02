@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Volume Pump</title>
+
+    <style>
+      body {
+        height: 100%;
+        width: 100%;
+      }
+
+      .wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: auto;
+        height: 700px;
+        width: 500px;
+      }
+
+      #pump-wrapper {
+        border: 1px solid rgb(0, 0, 0);
+        height: 100%;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: start;
+      }
+      #pump {
+        flex-grow: 1;
+      }
+      #base-of-pump {
+        height: 200px;
+        background-color: rgb(136, 135, 135);
+        width: 100%;
+        z-index: 1;
+        border: 1px solid rgb(0, 0, 0);
+      }
+
+      .pull {
+        cursor: move;
+        cursor: grab;
+      }
+
+      #pump-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: end;
+        align-items: center;
+        height: 100%;
+      }
+
+      #pump-head {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      #handle {
+        width: 80px;
+        height: 10px;
+        background-color: rgb(119, 136, 153);
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+
+      #lever {
+        height: 120px;
+        width: 10px;
+        background-color: rgb(119, 136, 153);
+      }
+
+      #pump-body {
+        display: flex;
+        flex-direction: column;
+        height: 180px;
+        align-items: center;
+        justify-content: start;
+        width: 28px;
+        background-color: rgb(119, 136, 153);
+        margin-bottom: -40px;
+        z-index: 2;
+        padding: 12px 12px;
+      }
+
+      #level {
+        color: rgb(255, 255, 255);
+        padding-bottom: 2px;
+        user-select: none;
+      }
+      #pump-inner-container {
+        background-color: rgb(190, 201, 213);
+        flex-grow: 1;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: end;
+      }
+
+      #pump-filling {
+        height: 0%;
+        background-color: rgb(108, 240, 108);
+        width: 100%;
+        transition: height 100ms linear;
+      }
+
+      #handle-container {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        justify-content: end;
+        position: relative;
+        width: 80px;
+        height: 120px;
+      }
+
+      #volume-icon {
+        height: 30px;
+        width: 30px;
+        padding-top: 50px;
+        margin-left: calc(50% - 12px);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <h1>You gottta pump it up!!!</h1>
+      <div id="pump-wrapper">
+        <div id="pump">
+          <div id="pump-container">
+            <div id="handle-container" class="pull">
+              <div id="handle"></div>
+
+              <div id="lever"></div>
+            </div>
+            <div id="pump-body">
+              <div id="level">0</div>
+              <div id="pump-inner-container">
+                <div id="pump-filling"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="base-of-pump">
+        <img id="volume-icon" src="./Icons8/icons8-volume-50.png" />
+      </div>
+    </div>
+    <script>
+      let isDragging = false;
+      const MAX_FILL = 1300;
+      let offsetX = 0;
+      let offsetY = 0;
+      let filled = 0;
+      const pumpBody = document.getElementById("pump-body");
+      const lever = document.getElementById("lever");
+      const originalLeverHeight = lever.clientHeight;
+      const handle = document.getElementById("handle");
+      const levelValue = document.getElementById("level");
+      const pumpFilling = document.getElementById("pump-filling");
+
+      let drainInterval = setInterval(() => {
+        filled = Math.max(0, filled - 30);
+        setLevel();
+      }, 700);
+      const container = document.getElementById("handle-container");
+
+      let prevY = 0;
+
+      function setLevel() {
+        const percentageFill = Math.round((filled / MAX_FILL) * 100);
+        levelValue.innerText = percentageFill;
+        pumpFilling.style.height = `${percentageFill}%`;
+      }
+
+      handle.addEventListener("mousedown", (e) => {
+        isDragging = true;
+
+        offsetX = e.clientX - handle.offsetLeft;
+        offsetY = e.clientY - handle.offsetTop;
+        handle.style.cursor = "grabbing";
+      });
+
+      document.addEventListener("mousemove", (e) => {
+        if (!isDragging) return;
+
+        let x = e.clientX - offsetX;
+        let y = e.clientY - offsetY;
+
+        x = Math.max(
+          0,
+          Math.min(x, container.clientWidth - handle.clientWidth)
+        );
+        y = Math.max(
+          0,
+          Math.min(y, container.clientHeight - handle.clientHeight)
+        );
+
+        filled = Math.min(MAX_FILL, filled + Math.max(0, y - prevY));
+
+        setLevel();
+
+        handle.style.left = `${x}px`;
+        handle.style.top = `${y}px`;
+
+        const newHeight = Math.max(
+          0,
+          originalLeverHeight - y - handle.clientHeight
+        );
+        lever.style.height = `${newHeight}px`;
+        prevY = y;
+      });
+
+      document.addEventListener("mouseup", () => {
+        isDragging = false;
+        handle.style.cursor = "grab";
+
+        function repositionLever() {
+          handle.style.left = 0;
+          handle.style.top = 0;
+          lever.style.height = `${originalLeverHeight}px`;
+        }
+
+        function resetVariables() {
+          prevY = 0;
+        }
+
+        setTimeout(() => {
+          resetVariables();
+          repositionLever();
+        }, 200);
+      });
+    </script>
+  </body>
+</html>
