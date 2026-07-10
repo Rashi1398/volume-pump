@@ -10,5 +10,4 @@ If you'd like to contribute, please open an issue or submit a pull request. Keep
 
 ## License
 
-This project has no license specified. Add a `LICENSE` file if you want to make the terms explicit (e.g., MIT).
-
+MIT
